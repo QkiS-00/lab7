@@ -7,7 +7,15 @@ class EventEmitter {
     if (!this._listeners.has(event)) {
       this._listeners.set(event, []);
     }
-    this._listeners.get(event).push(listener);
+    this._listeners.get(event).push({ fn: listener, once: false });
+    return this;
+  }
+
+  once(event, listener) {
+    if (!this._listeners.has(event)) {
+      this._listeners.set(event, []);
+    }
+    this._listeners.get(event).push({ fn: listener, once: true });
     return this;
   }
 
@@ -15,7 +23,7 @@ class EventEmitter {
     if (!this._listeners.has(event)) return this;
     const filtered = this._listeners
       .get(event)
-      .filter((l) => l !== listener);
+      .filter((entry) => entry.fn !== listener);
     this._listeners.set(event, filtered);
     return this;
   }
@@ -30,11 +38,14 @@ class EventEmitter {
     }
 
     const listeners = [...this._listeners.get(event)];
+    this._listeners.set(
+      event,
+      listeners.filter((entry) => !entry.once)
+    );
 
-    for (const listener of listeners) {
-    
+    for (const entry of listeners) {
       try {
-        listener(...args);
+        entry.fn(...args);
       } catch (err) {
         this.emit('error', err);
       }
