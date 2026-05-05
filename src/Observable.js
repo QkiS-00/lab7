@@ -48,6 +48,28 @@ class Observable {
     this._subscribeFn(safeObserver);
     return subscription;
   }
+
+  map(transformFn) {
+    return new Observable((observer) => {
+      this.subscribe({
+        next: (value) => observer.next(transformFn(value)),
+        error: (err) => observer.error(err),
+        complete: () => observer.complete(),
+      });
+    });
+  }
+
+  filter(predicateFn) {
+    return new Observable((observer) => {
+      this.subscribe({
+        next: (value) => {
+          if (predicateFn(value)) observer.next(value);
+        },
+        error: (err) => observer.error(err),
+        complete: () => observer.complete(),
+      });
+    });
+  }
 }
 
 export { Observable };
