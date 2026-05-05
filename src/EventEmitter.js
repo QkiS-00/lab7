@@ -4,13 +4,15 @@ class EventEmitter {
   }
 
   on(event, listener) {
-    if (!this._listeners.has(event)) {
-      this._listeners.set(event, []);
-    }
-    this._listeners.get(event).push({ fn: listener, once: false });
-    return this;
+  if (!this._listeners.has(event)) {
+    this._listeners.set(event, []);
   }
-
+  const existing = this._listeners.get(event);
+  if (!existing.find((entry) => entry.fn === listener)) {
+    existing.push({ fn: listener, once: false });
+  }
+  return this;
+}
   once(event, listener) {
     if (!this._listeners.has(event)) {
       this._listeners.set(event, []);
