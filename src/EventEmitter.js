@@ -21,9 +21,23 @@ class EventEmitter {
   }
 
   emit(event, ...args) {
-    if (!this._listeners.has(event)) return;
-    for (const listener of this._listeners.get(event)) {
-      listener(...args);
+    if (!this._listeners.has(event)) {
+      if (event === 'error') {
+        const err = args[0] instanceof Error ? args[0] : new Error(String(args[0]));
+        throw err;
+      }
+      return;
+    }
+
+    const listeners = [...this._listeners.get(event)];
+
+    for (const listener of listeners) {
+    
+      try {
+        listener(...args);
+      } catch (err) {
+        this.emit('error', err);
+      }
     }
   }
 }
